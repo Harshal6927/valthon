@@ -13,8 +13,8 @@ Valthon is Python with Valorant.
 This is a command-line utility to translate and run valthon files.
 
 Flags and arguments:
-    -V, --version:      Print version number
-    -v, --verbose:      Print progress
+    -v, --version:      Print version number
+    --verbose:          Print progress
     -c, --compile:      Translate to python file and store; do not run
     -k, --keep:         Keep generated python files
     -t, --lower_true:   Adds support for lower case true/false
