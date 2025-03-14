@@ -5,11 +5,13 @@ Bython is a Python preprosessor which translates curly brackets into indentation
 
 
 ## Content of README:
-  * [Key features](#key-features)
-  * [Code example](#code-example)
-  * [Installation](#installation)
-  * [Quick intro](#quick-intro)
-  * [Structure of the repository](#structure-of-the-repository)
+- [Bython](#bython)
+  - [Content of README:](#content-of-readme)
+  - [Key features](#key-features)
+  - [Code example](#code-example)
+  - [Installation](#installation)
+  - [Quick intro](#quick-intro)
+  - [Structure of the repository](#structure-of-the-repository)
 
 
 ## Key features

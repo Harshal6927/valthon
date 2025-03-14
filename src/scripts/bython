@@ -2,15 +2,15 @@
 import argparse
 import os
 import sys
+from pathlib import Path
 
-import bython.parser as parser
-from bython.logger import Logger
-from bython import VERSION_NUMBER
+from valthon import VERSION_NUMBER, parser
+from valthon.logger import Logger
 
 """
-Bython is Python with braces.
+Valthon is Python with Valorant.
 
-This is a command-line utility to translate and run bython files.
+This is a command-line utility to translate and run valthon files.
 
 Flags and arguments:
     -V, --version:      Print version number
@@ -20,45 +20,69 @@ Flags and arguments:
     -t, --lower_true:   Adds support for lower case true/false
     -2, --python2:      Use python2 instead of python3
     -o, --output:       Specify name of output file (if -c is present)
-    input,              Bython files to process
+    input,              Valthon files to process
     args,               Arguments to script
 """
 
-def main():
+
+def main() -> None:
     # Setup argument parser
-    argparser = argparse.ArgumentParser("bython", 
-        description="Bython is a python preprosessor that translates braces into indentation", 
-        formatter_class=argparse.RawTextHelpFormatter)
-    argparser.add_argument("-V", "--version", 
-        action="version", 
-        version="Bython v%s\nMathias Lohne and Tristan Pepin 2018" % VERSION_NUMBER)
-    argparser.add_argument("-v", "--verbose", 
+    argparser = argparse.ArgumentParser(
+        "valthon",
+        description=(
+            "Valthon is a python preprosessor that translates valthon files to python."
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    argparser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=f"v{VERSION_NUMBER}",
+    )
+    argparser.add_argument(
+        "--verbose",
         help="print progress",
-        action="store_true") 
-    argparser.add_argument("-c", "--compile", 
+        action="store_true",
+    )
+    argparser.add_argument(
+        "-c",
+        "--compile",
         help="translate to python only (don't run files)",
-        action="store_true")
-    argparser.add_argument("-k", "--keep",
+        action="store_true",
+    )
+    argparser.add_argument(
+        "-k",
+        "--keep",
         help="keep generated python files",
-        action="store_true")
-    argparser.add_argument("-t", "--lower_true",
+        action="store_true",
+    )
+    argparser.add_argument(
+        "-t",
+        "--lower_true",
         help="adds support for lower case true/false",
-        action="store_true")
-    argparser.add_argument("-2", "--python2",
+        action="store_true",
+    )
+    argparser.add_argument(
+        "-2",
+        "--python2",
         help="use python2 instead of python3 (default)",
-        action="store_true")
-    argparser.add_argument("-o", "--output",
-        type=str, 
+        action="store_true",
+    )
+    argparser.add_argument(
+        "-o",
+        "--output",
+        type=str,
         help="specify name of output file (if -c is present)",
-        nargs=1)
-    argparser.add_argument("input",
-        type=str, 
-        help="bython files to process",
-        nargs=1)
-    argparser.add_argument("args",
+        nargs=1,
+    )
+    argparser.add_argument("input", type=str, help="valthon files to process", nargs=1)
+    argparser.add_argument(
+        "args",
         type=str,
         help="arguments to script",
-        nargs=argparse.REMAINDER)
+        nargs=argparse.REMAINDER,
+    )
 
     # Parse arguments
     cmd_args = argparser.parse_args()
@@ -68,7 +92,7 @@ def main():
 
     # Check for invalid combination of flags
     if cmd_args.output is not None and cmd_args.compile is False:
-        logger.log_error("Cannot specify output when bython is not in compile mode")
+        logger.log_error("Cannot specify output when valthon is not in compile mode")
         sys.exit(1)
 
     # Where to output files
@@ -78,12 +102,13 @@ def main():
         logger.log_info("Placing files in this directory")
 
     else:
-        # Prefix with . to hide, also to avoid name conflicts. 
+        # Prefix with . to hide, also to avoid name conflicts.
         path_prefix = "python_"
-        logger.log_info("Placing files in this directory, but prefixing them with python_*")
+        logger.log_info(
+            "Placing files in this directory, but prefixing them with python_*",
+        )
 
-
-    # List of all files to translate from bython to python
+    # List of all files to translate from valthon to python
     parse_que = []
 
     # Add all files from cmd line
@@ -101,17 +126,17 @@ def main():
             import_files = parser.parse_imports(parse_que[i])
 
         except FileNotFoundError:
-            logger.log_error("No file named '%s'" % parse_que[i])
+            logger.log_error(f"No file named '{parse_que[i]}'")
             sys.exit(1)
 
         for import_file in import_files:
-            if os.path.isfile(import_file) and not import_file in parse_que:
-                logger.log_info("Adding '%s' to parse que" % import_file)
+            if Path(import_file).is_file() and import_file not in parse_que:
+                logger.log_info(f"Adding '{import_file}' to parse que")
                 parse_que.append(import_file)
 
         i += 1
 
-    if path_prefix != "":
+    if not path_prefix:
         import_translations = {}
         for file in parse_que:
             import_translations[file[:-3]] = path_prefix + file[:-3]
@@ -120,31 +145,35 @@ def main():
         import_translations = None
 
     # Parsing
+    current_file_name = None
     try:
         for file in parse_que:
             current_file_name = file
-            logger.log_info("Parsing '%s'" % file)
+            logger.log_info(f"Parsing '{file}'")
 
             if cmd_args.output is None:
                 outputname = None
-            elif os.path.isdir(cmd_args.output[0]):
+            elif Path(cmd_args.output[0]).is_dir():
                 new_file_name = parser._change_file_name(os.path.split(file)[1])
                 outputname = os.path.join(cmd_args.output[0], new_file_name)
             else:
                 outputname = cmd_args.output[0]
 
-            parser.parse_file(file, cmd_args.lower_true, path_prefix, outputname, import_translations)
-
+            parser.parse_file(
+                file,
+                path_prefix,
+                outputname,
+                import_translations,
+            )
     except (TypeError, FileNotFoundError) as e:
-        logger.log_error("Error while parsing '%s'.\n%s" % (current_file_name, str(e)))
+        logger.log_error(f"Error while parsing '{current_file_name}'.\n{e!s}")
         # Cleanup
         try:
             for file in parse_que:
-                os.remove(path_prefix + parser._change_file_name(file, None))
-        except:
-            pass
-
-        raise e
+                Path(path_prefix + parser._change_file_name(file, None)).unlink()
+        except Exception as e:
+            logger.log_error(f"Failed to delete file: {e}")
+            raise e
         sys.exit(1)
 
     # Stop if we were only asked to translate
@@ -152,42 +181,39 @@ def main():
         return
 
     # Run file
-    if cmd_args.python2:
-        python_command = "python2"
+    python_command = "python2" if cmd_args.python2 else "python3"
 
-    else:
-        python_command = "python3"
-
-    filename = os.path.basename(cmd_args.input[0])
+    filename = Path(cmd_args.input[0]).name
 
     try:
         logger.log_info("Running")
         logger.program_header()
-        os.system("%s %s %s" % (
-            python_command,
-            path_prefix + parser._change_file_name(filename, None),
-            " ".join(arg for arg in cmd_args.args))
+        os.system(
+            "%s %s %s"
+            % (
+                python_command,
+                path_prefix + parser._change_file_name(filename, None),
+                " ".join(arg for arg in cmd_args.args),
+            ),
         )
         logger.program_footer()
 
     except Exception as e:
         logger.log_error("Unexpected error while running Python")
-        logger.log_info("Reported error message: %s" % str(e))
+        logger.log_info(f"Reported error message: {e!s}")
 
     # Delete file if requested
     try:
         if not cmd_args.keep:
             logger.log_info("Deleting files")
             for file in parse_que:
-                filename = os.path.basename(file)
-                os.remove(path_prefix + parser._change_file_name(filename, None))
-
+                filename = Path(file).name
+                Path(path_prefix + parser._change_file_name(filename, None)).unlink()
     except:
-        logger.log_error("Could not delete created python files.\nSome garbage may remain in ~/.bythontemp/")
+        logger.log_error(
+            "Could not delete created python files.\nSome garbage may remain in ~/.valthontemp/",
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-
-
-
