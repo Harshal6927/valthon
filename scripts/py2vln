@@ -201,7 +201,7 @@ def main() -> None:
         "-v",
         "--version",
         action="version",
-        version=f"py2vln is a part of valthon v{VERSION_NUMBER}\nHarshal Laheri 2025",
+        version=f"v{VERSION_NUMBER}",
     )
     argparser.add_argument(
         "-o",

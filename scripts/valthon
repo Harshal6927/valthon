@@ -7,23 +7,6 @@ from pathlib import Path
 from valthon import VERSION_NUMBER, parser
 from valthon.logger import Logger
 
-"""
-Valthon is Python with Valorant.
-
-This is a command-line utility to translate and run valthon files.
-
-Flags and arguments:
-    -v, --version:      Print version number
-    --verbose:          Print progress
-    -c, --compile:      Translate to python file and store; do not run
-    -k, --keep:         Keep generated python files
-    -t, --lower_true:   Adds support for lower case true/false
-    -2, --python2:      Use python2 instead of python3
-    -o, --output:       Specify name of output file (if -c is present)
-    input,              Valthon files to process
-    args,               Arguments to script
-"""
-
 
 def main() -> None:
     # Setup argument parser
@@ -58,13 +41,6 @@ def main() -> None:
         action="store_true",
     )
     argparser.add_argument(
-        "-t",
-        "--lower_true",
-        help="adds support for lower case true/false",
-        action="store_true",
-    )
-    argparser.add_argument(
-        "-2",
         "--python2",
         help="use python2 instead of python3 (default)",
         action="store_true",

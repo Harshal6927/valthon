@@ -17,8 +17,8 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/harshal6927/valthon",
-    scripts=["scripts/vln2py", "scripts/valthon", "scripts/py2vln"],
-    data_files=[("man/man1", ["etc/valthon.1", "etc/py2vln.1", "etc/vln2py.1"])],
+    scripts=["scripts/valthon", "scripts/py2vln"],
+    data_files=[("man/man1", ["etc/valthon.1", "etc/py2vln.1"])],
     packages=["valthon"],
     zip_safe=False,
 )

@@ -1,0 +1,7 @@
+loadout test() -> afk:  # This is a test function
+    # chat("if you see this, then goodbye world")
+    chat("Hello World!")  # This is a print statement
+
+
+# This is a test function call
+test()

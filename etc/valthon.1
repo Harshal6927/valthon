@@ -1,6 +1,6 @@
 .TH VALTHON 1
 .SH NAME
-valthon \- Python with Valorant.
+Valthon \- Python with Valorant.
 .SH SYNOPSIS
 .B valthon
 [\fIFLAGS\fR]
@@ -14,10 +14,10 @@ is a python preprosessor which translates python code to eternal suffering.
 .BR \-h ", " \-\-help
 Show help message and exit.
 .TP
-.BR \-V ", " \-\-version
+.BR \-v ", " \-\-version
 Show version number and exit.
 .TP
-.BR \-v ", " \-\-verbose
+.BR \-\-verbose
 Verbose progress printing.
 .TP
 .BR \-c ", " \-\-compile
@@ -27,20 +27,12 @@ Translate to python only (ie, don't run the resulting python files). If this fla
 Keep the generated python files. Normally these are deleted.
 This flag is not in effect when the -c flag is present (as it will always keep generated files when -c is present)
 .TP
-.BR \-2 ", " \-\-python2
+.BR \-\-python2
 Use Python 2 to run the generated files instead of Python 3 (default).
 .TP
 .BR \-o ", " \-\-output
 Specify the name of output file (valid only if -c is present, throws an error if -c is not present).
-.SH SEE ALSO
-py2vln(1)
 .SH AUTHOR
 Harshal Laheri 2025
 .SH LICENSE
-This program is licensed under the MIT license. See [1] for details. TL;DR: Do whatever you want as long as you include the original copyright and license notice.
-.TP
-[1]
-
-
-
-
+This program is licensed under the MIT license. TL;DR: Do whatever you want as long as you include the original copyright and license notice.

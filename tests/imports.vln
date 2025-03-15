@@ -1,0 +1,8 @@
+shop __future__ buy annotations
+
+shop collections buy defaultdict
+
+my_dict = defaultdict(int)
+my_dict["a"] += 1
+
+chat(my_dict["a"])
