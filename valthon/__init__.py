@@ -34,13 +34,13 @@ VAL2PY_MAPPINGS = {
     "lurker": "nonlocal",
     "standby": "pass",
     "ban": "raise",
-    r"neural theft": "assert",
+    r"neural theft": "assert",  # cypher ult
     "victory": "True",
     "defeat": "False",
     "shop": "from",
     "shiftwalk": "lambda",
     "stack": "with",
-    "tag": "is",
+    "tag": "is",  # sova drone
     "remake": "yield",
     "surrender": "yield from",
     "rush": "open",

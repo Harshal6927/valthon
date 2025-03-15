@@ -12,6 +12,9 @@ setup(
     version=VERSION_NUMBER,
     author="Harshal Laheri",
     author_email="harshal@harshallaheri.me",
+    project_urls={
+        "Website": "https://harshallaheri.me/",
+    },
     license="MIT",
     description="Python with Valorant",
     long_description=long_description,
