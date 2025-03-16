@@ -1,0 +1,32 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[project]
+authors = [{ name = "Harshal Laheri", email = "harshal@harshallaheri.me" }]
+description = "Python with Valorant"
+dynamic = ["version"]
+license = { text = "MIT" }
+name = "valthon"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://github.com/harshal6927/valthon"
+Website = "https://harshallaheri.me/"
+
+[tool.hatch.version]
+path = "valthon/__init__.py"
+pattern = "VERSION_NUMBER\\s*=\\s*['\"](?P<version>[^'\"]+)['\"]"
+
+[project.scripts]
+py2vln = "valthon.translator:main"
+valthon = "valthon.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["valthon"]
+
+[dependency-groups]
+dev = [
+    "pytest==8.3.5",
+]
