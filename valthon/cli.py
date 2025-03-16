@@ -1,83 +1,52 @@
 #! /usr/bin/env python3
-import argparse
 import os
 import subprocess
 import sys
 from pathlib import Path
 
+import click
+
 from valthon import VERSION_NUMBER, parser
 from valthon.logger import Logger
 
 
-def main() -> None:
-    # Setup argument parser
-    argparser = argparse.ArgumentParser(
-        "valthon",
-        description=(
-            "Valthon is a python preprosessor that translates valthon files to python."
-        ),
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    argparser.add_argument(
-        "-v",
-        "--version",
-        action="version",
-        version=f"v{VERSION_NUMBER}",
-    )
-    argparser.add_argument(
-        "--verbose",
-        help="print progress",
-        action="store_true",
-    )
-    argparser.add_argument(
-        "-c",
-        "--compile",
-        help="translate to python only (don't run files)",
-        action="store_true",
-    )
-    argparser.add_argument(
-        "-k",
-        "--keep",
-        help="keep generated python files",
-        action="store_true",
-    )
-    argparser.add_argument(
-        "--python2",
-        help="use python2 instead of python3 (default)",
-        action="store_true",
-    )
-    argparser.add_argument(
-        "-o",
-        "--output",
-        type=str,
-        help="specify name of output file (if -c is present)",
-        nargs=1,
-    )
-    argparser.add_argument("input", type=str, help="valthon files to process", nargs=1)
-    argparser.add_argument(
-        "args",
-        type=str,
-        help="arguments to script",
-        nargs=argparse.REMAINDER,
-    )
-
-    # Parse arguments
-    cmd_args = argparser.parse_args()
-
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.version_option(
+    version=VERSION_NUMBER,
+    prog_name="valthon",
+    message="v%(version)s",
+)
+@click.option("--verbose", is_flag=True, help="Print progress")
+@click.option(
+    "-c",
+    "--compile",
+    is_flag=True,
+    help="Translate to python only (don't run files)",
+)
+@click.option("-k", "--keep", is_flag=True, help="Keep generated python files")
+@click.option(
+    "--python2",
+    is_flag=True,
+    help="Use python2 instead of python3 (default)",
+)
+@click.option("-o", "--output", help="Specify name of output file (if -c is present)")
+@click.argument("input_file", required=True)
+@click.argument("args", nargs=-1)
+def main(verbose, compile, keep, python2, output, input_file, args) -> None:
+    """Valthon is a python preprosessor that translates valthon files to python."""
     # Create logger
-    logger = Logger(cmd_args.verbose)
+    logger = Logger(verbose)
 
     # Check for invalid combination of flags
-    if cmd_args.output is not None and cmd_args.compile is False:
+    if output is not None and not compile:
         logger.log_error("Cannot specify output when valthon is not in compile mode")
         sys.exit(1)
 
     # Where to output files
-    if cmd_args.compile or cmd_args.keep:
+    if compile or keep:
         # No path prefix
         path_prefix = ""
         logger.log_info("Placing files in this directory")
-
     else:
         # Prefix with . to hide, also to avoid name conflicts.
         path_prefix = "python_"
@@ -89,19 +58,17 @@ def main() -> None:
     parse_que = []
 
     # Add all files from cmd line
-    parse_que.append(cmd_args.input[0])
-    if cmd_args.compile:
-        for arg in cmd_args.args:
+    parse_que.append(input_file)
+    if compile:
+        for arg in args:
             parse_que.append(arg)
 
-    # Add all files from imports, and recursivelly (ish) add all imports from
-    # the imports (and so on..)
+    # Add all files from imports, and recursively add all imports
     logger.log_info("Scanning for imports")
     i = 0
     while i < len(parse_que):
         try:
             import_files = parser.parse_imports(parse_que[i])
-
         except FileNotFoundError:
             logger.log_error(f"No file named '{parse_que[i]}'")
             sys.exit(1)
@@ -113,28 +80,28 @@ def main() -> None:
 
         i += 1
 
+    # Handle import translations
     if not path_prefix:
         import_translations = {}
         for file in parse_que:
             import_translations[file[:-3]] = path_prefix + file[:-3]
-
     else:
         import_translations = None
 
-    # Parsing
+    # Parsing files
     current_file_name = None
     try:
         for file in parse_que:
             current_file_name = file
             logger.log_info(f"Parsing '{file}'")
 
-            if cmd_args.output is None:
+            if output is None:
                 outputname = None
-            elif Path(cmd_args.output[0]).is_dir():
+            elif Path(output).is_dir():
                 new_file_name = parser._change_file_name(os.path.split(file)[1])
-                outputname = os.path.join(cmd_args.output[0], new_file_name)
+                outputname = os.path.join(output, new_file_name)
             else:
-                outputname = cmd_args.output[0]
+                outputname = output
 
             parser.parse_file(
                 file,
@@ -147,27 +114,29 @@ def main() -> None:
         # Cleanup
         try:
             for file in parse_que:
-                Path(path_prefix + parser._change_file_name(file, None)).unlink()
+                Path(path_prefix + parser._change_file_name(file, None)).unlink(
+                    missing_ok=True,
+                )
         except Exception as e:
             logger.log_error(f"Failed to delete file: {e}")
             raise e
         sys.exit(1)
 
     # Stop if we were only asked to translate
-    if cmd_args.compile:
+    if compile:
         return
 
     # Run file
-    if cmd_args.python2:
+    if python2:
         python_commands = ["python2", "py -2", sys.executable]
     else:
         python_commands = ["python3", "python", "py", sys.executable]
         if os.name == "nt":
             python_commands.pop(0)
 
-    filename = Path(cmd_args.input[0]).name
+    filename = Path(input_file).name
     py_file = path_prefix + parser._change_file_name(filename, None)
-    args_str = " ".join(arg for arg in cmd_args.args)
+    args_str = " ".join(arg for arg in args)
 
     try:
         logger.log_info("Running")
@@ -184,12 +153,12 @@ def main() -> None:
                         check=False,
                     )
                 else:
-                    result = subprocess.run([cmd, py_file, *cmd_args.args], check=False)
+                    result = subprocess.run([cmd, py_file, *args], check=False)
 
                 if result.returncode == 0:
                     success = True
                     break
-            except:
+            except Exception:
                 continue
 
         if not success:
@@ -203,14 +172,16 @@ def main() -> None:
 
     # Delete file if requested
     try:
-        if not cmd_args.keep:
+        if not keep:
             logger.log_info("Deleting files")
             for file in parse_que:
                 filename = Path(file).name
-                Path(path_prefix + parser._change_file_name(filename, None)).unlink()
-    except:
+                Path(path_prefix + parser._change_file_name(filename, None)).unlink(
+                    missing_ok=True,
+                )
+    except Exception:
         logger.log_error(
-            "Could not delete created python files.\nSome garbage may remain in ~/.valthontemp/",
+            "Could not delete created python files.\nSome garbage may remain in the directory",
         )
 
 

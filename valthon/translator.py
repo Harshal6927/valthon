@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-import argparse
 import re
 import sys
 from pathlib import Path
+
+import click
 
 from valthon import VAL2PY_MAPPINGS, VERSION_NUMBER
 from valthon.logger import Logger
@@ -186,54 +187,36 @@ def reverse_parse(filename: str, outputname: str) -> None:
         outfile.write(infile_str_indented)
 
 
-def main() -> None:
-    """Translate python to valthon.
-
-    Command line utility and Python module for translating python code
-    to valthon code.
-    """
-    argparser = argparse.ArgumentParser(
-        "py2vln",
-        description="py2vln translates python to valthon",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    argparser.add_argument(
-        "-v",
-        "--version",
-        action="version",
-        version=f"v{VERSION_NUMBER}",
-    )
-    argparser.add_argument(
-        "-o",
-        "--output",
-        type=str,
-        help="specify name of output file",
-        nargs=1,
-    )
-    argparser.add_argument("input", type=str, help="python file to translate", nargs=1)
-
-    cmd_args = argparser.parse_args()
-
+@click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.version_option(
+    version=VERSION_NUMBER,
+    prog_name="py2vln",
+    message="v%(version)s",
+)
+@click.option("-o", "--output", help="Specify name of output file")
+@click.argument("input_file", required=True)
+def main(output, input_file) -> None:
+    """py2vln translates python to valthon code."""
     logger = Logger()
 
     try:
         outputname = (
-            cmd_args.output[0]
-            if cmd_args.output is not None
-            else change_file_name(cmd_args.input[0], None)
+            output if output is not None else change_file_name(input_file, None)
         )
-        with Path(cmd_args.input[0]).open(encoding="utf-8") as infile:
+
+        with Path(input_file).open(encoding="utf-8") as infile:
             infile_string = "".join(infile.readlines())
 
-        temp_path = Path(cmd_args.input[0] + ".py2vlntemp")
+        temp_path = Path(input_file + ".py2vlntemp")
         with temp_path.open("w", encoding="utf-8") as tempoutfile:
             tempoutfile.write(infile_string)
 
-        reverse_parse(cmd_args.input[0] + ".py2vlntemp", outputname)
-        Path(cmd_args.input[0] + ".py2vlntemp").unlink()
+        reverse_parse(input_file + ".py2vlntemp", outputname)
+        temp_path.unlink(missing_ok=True)
 
     except FileNotFoundError:
-        logger.log_error(f"No file named {cmd_args.input[0]}")
+        logger.log_error(f"No file named {input_file}")
+        sys.exit(1)
 
     except Exception as e:
         logger.log_error(f"Unexpected error: {e!s}")
