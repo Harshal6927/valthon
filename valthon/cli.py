@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 import argparse
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -157,21 +158,43 @@ def main() -> None:
         return
 
     # Run file
-    python_command = "python2" if cmd_args.python2 else "python3"
+    if cmd_args.python2:
+        python_commands = ["python2", "py -2", sys.executable]
+    else:
+        python_commands = ["python3", "python", "py", sys.executable]
+        if os.name == "nt":
+            python_commands.pop(0)
 
     filename = Path(cmd_args.input[0]).name
+    py_file = path_prefix + parser._change_file_name(filename, None)
+    args_str = " ".join(arg for arg in cmd_args.args)
 
     try:
         logger.log_info("Running")
         logger.program_header()
-        os.system(
-            "%s %s %s"
-            % (
-                python_command,
-                path_prefix + parser._change_file_name(filename, None),
-                " ".join(arg for arg in cmd_args.args),
-            ),
-        )
+
+        # Try different Python commands until one works
+        success = False
+        for cmd in python_commands:
+            try:
+                if os.name == "nt":
+                    result = subprocess.run(
+                        f"{cmd} {py_file} {args_str}",
+                        shell=True,
+                        check=False,
+                    )
+                else:
+                    result = subprocess.run([cmd, py_file, *cmd_args.args], check=False)
+
+                if result.returncode == 0:
+                    success = True
+                    break
+            except:
+                continue
+
+        if not success:
+            logger.log_error("Could not find a working Python interpreter")
+
         logger.program_footer()
 
     except Exception as e:
