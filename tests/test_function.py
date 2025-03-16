@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 
@@ -7,11 +8,19 @@ def test_function() -> None:
         stdout=subprocess.PIPE,
         check=False,
     )
-    assert result.stdout == b"Hello World!\n"
+
+    if os.name == "nt":
+        assert result.stdout == b"Hello World!\r\n"
+    else:
+        assert result.stdout == b"Hello World!\n"
 
     result = subprocess.run(
         ["valthon", "tests/function.vln"],
         stdout=subprocess.PIPE,
         check=False,
     )
-    assert result.stdout == b"Hello World!\n"
+
+    if os.name == "nt":
+        assert result.stdout == b"Hello World!\r\n"
+    else:
+        assert result.stdout == b"Hello World!\n"
