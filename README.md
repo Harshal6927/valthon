@@ -2,7 +2,7 @@
 
 Python with Valorant.
 
-Valthon is a Python preprosessor which translates which translates regular Python code into Valorant maddness, because why not? After losing a game of Valorant, you can now go back to your code and see the same thing. The only difference is that you can not blame your teammates for the code.
+Valthon is a Python preprosessor which translates regular Python code into Valorant maddness, because why not? After losing a game of Valorant, you can now go back to your code and see the same thing. The only difference is that you can not blame your teammates for the code.
 
 ## Installation
 
