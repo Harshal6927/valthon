@@ -45,4 +45,5 @@ VAL2PY_MAPPINGS = {
     "surrender": "yield from",
     "rush": "open",
     "camp": "close",
+    "ff": "quit",  # forfeit
 }
