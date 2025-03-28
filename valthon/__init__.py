@@ -1,4 +1,4 @@
-VERSION_NUMBER = "1.1.1"
+VERSION_NUMBER = "1.1.2"
 
 VAL2PY_MAPPINGS = {
     "bait": "try",
