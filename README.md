@@ -112,3 +112,4 @@ Note: You can also use the Python keywords in the Valthon code, ie. you can use 
 | surrender      | yield from |
 | rush           | open       |
 | camp           | close      |
+| ff             | quit       |
